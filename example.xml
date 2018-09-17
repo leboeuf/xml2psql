@@ -1,0 +1,13 @@
+<xml2psql>
+    <ConnectionString></ConnectionString>
+    <Schema>
+        <Tables>
+            <Table>
+                <Column/>
+                <Column/>
+                <Column/>
+                <Index/>
+            </Table>
+        </Tables>
+    </Schema>
+</xml2psql>
