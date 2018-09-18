@@ -47,7 +47,11 @@ namespace xml2psql
             }
 
             // Parse XML file
-            await XmlParser.ParseXml(xml);
+            var tables = XmlParser.ParseXml(xml);
+
+            // Write to database
+            var connectionString = xml.XPathSelectElement("/xml2psql/ConnectionString[1]").Value;
+            await DbSchemaWriter.Write(connectionString, tables);
         }
 
         static XDocument TryLoadXml(string path)
