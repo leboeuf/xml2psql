@@ -21,6 +21,14 @@ namespace xml2psql
                 using (var transaction = connection.BeginTransaction())
                 using (var command = connection.CreateCommand())
                 {
+                    // Check whether we need to enable uuid support
+                    var hasUuidPrimaryKey = tables.Any(t => t.Columns.Any(c => c.DataType.ToLowerInvariant() == "uuid" && c.IsPrimaryKey));
+                    if (hasUuidPrimaryKey)
+                    {
+                        Console.WriteLine("Warning: Found PK columns with UUID data type, please remember to run 'CREATE EXTENSION \"uuid-ossp\";' on your database (this script won't run it because the user needs SUPERADMIN privileges).");
+                    }
+
+                    // Create tables
                     foreach (var table in tables)
                     {
                         command.CommandText = $"CREATE TABLE {table.Name} ({GetColumnDefinitions(table.Columns)})";
@@ -65,6 +73,11 @@ namespace xml2psql
             if (column.IsPrimaryKey)
             {
                 sb.Append(" PRIMARY KEY");
+
+                if (column.DataType.ToLowerInvariant() == "uuid")
+                {
+                    sb.Append(" DEFAULT uuid_generate_v1mc()");
+                }
             }
 
             if (column.Unique)
