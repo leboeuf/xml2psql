@@ -25,7 +25,7 @@ namespace xml2psql
                     var hasUuidPrimaryKey = tables.Any(t => t.Columns.Any(c => c.DataType.ToLowerInvariant() == "uuid" && c.IsPrimaryKey));
                     if (hasUuidPrimaryKey)
                     {
-                        Console.WriteLine("Warning: Found PK columns with UUID data type, please remember to run 'CREATE EXTENSION \"uuid-ossp\";' on your database (this script won't run it because the user needs SUPERADMIN privileges).");
+                        Console.WriteLine("Warning: Found PK columns with UUID data type, please remember to run 'CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";' on your database (this script won't run it because the user needs SUPERADMIN privileges).");
                     }
 
                     // Create tables
