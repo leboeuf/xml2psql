@@ -24,6 +24,7 @@ namespace xml2psql
             var isPrimaryKey = xml.Attribute("isprimarykey")?.Value.ToLowerInvariant() == "true";
             var isUnique = xml.Attribute("unique")?.Value.ToLowerInvariant() == "true";
             var notNull = xml.Attribute("notnull")?.Value.ToLowerInvariant() == "true";
+            var foreignKey = xml.Attribute("foreignkey")?.Value;
 
             return new Column
             {
@@ -32,7 +33,8 @@ namespace xml2psql
                 IsPrimaryKey = isPrimaryKey,
                 HasIndex = hasIndex,
                 Unique = isUnique,
-                NotNull = notNull
+                NotNull = notNull,
+                ForeignKey = foreignKey,
             };
         }
 

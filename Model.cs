@@ -22,5 +22,6 @@ namespace xml2psql.Model
         public bool HasIndex { get; set; }
         public bool Unique { get; set; }
         public bool NotNull { get; set; }
+        public string ForeignKey { get; set; }
     }
 }

@@ -31,7 +31,7 @@ namespace xml2psql
                     // Create tables
                     foreach (var table in tables)
                     {
-                        command.CommandText = $"CREATE TABLE {table.Name} ({GetColumnDefinitions(table.Columns)})";
+                        command.CommandText = $"CREATE TABLE {table.Name} ({Environment.NewLine}{GetColumnDefinitions(table.Columns)})";
                         await command.ExecuteNonQueryAsync();
 
                         var columnsWithIndexes = table.Columns.Where(c => c.HasIndex).ToArray();
@@ -62,17 +62,29 @@ namespace xml2psql
 
         private static string GetColumnDefinitions(IEnumerable<Column> columns)
         {
-            var definitions = columns.Select(GetColumnDefinition);
+            var hasCompositePrimaryKey = columns.Count(c => c.IsPrimaryKey) > 1;
+                    
+            var definitions = columns.Select(c => GetColumnDefinition(c, hasCompositePrimaryKey)).ToList();
+
+            if (hasCompositePrimaryKey)
+            {
+                var keyColumns = columns.Where(c => c.IsPrimaryKey).Select(c => c.Name);
+                definitions.Add($"PRIMARY KEY ({string.Join(", ", keyColumns)})");
+            }
+
             return string.Join($",{Environment.NewLine}", definitions);
         }
 
-        private static string GetColumnDefinition(Column column)
+        private static string GetColumnDefinition(Column column, bool tableHasCompositePrimaryKey)
         {
             var sb = new StringBuilder($"{column.Name} {column.DataType}");
 
             if (column.IsPrimaryKey)
             {
-                sb.Append(" PRIMARY KEY");
+                if (!tableHasCompositePrimaryKey)
+                {
+                    sb.Append(" PRIMARY KEY");
+                }
 
                 if (column.DataType.ToLowerInvariant() == "uuid")
                 {
@@ -88,6 +100,11 @@ namespace xml2psql
             if (column.NotNull)
             {
                 sb.Append(" NOT NULL");
+            }
+
+            if (!string.IsNullOrWhiteSpace(column.ForeignKey))
+            {
+                sb.Append($" REFERENCES {column.ForeignKey}");
             }
 
             return sb.ToString();

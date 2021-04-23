@@ -2,10 +2,14 @@
     <ConnectionString>Host=localhost;Port=5432;Database=xmltest;Username=xmltest_user;Password=test</ConnectionString>
     <Schema>
         <Tables>
+            <Table name="brands">
+                <Column name="id" type="uuid" isprimarykey="true"/>
+                <Column name="name" type="text" unique="true" notnull="true"/>
+            </Table>
             <Table name="products">
                 <Column name="id" type="uuid" isprimarykey="true"/>
                 <Column name="name" type="text" unique="true" notnull="true"/>
-                <Column name="brand_id" type="uuid" hasindex="true"/>
+                <Column name="brand_id" type="uuid" hasindex="true" foreignkey="brands (id)"/>
             </Table>
             <Table name="users">
                 <Column name="id" type="uuid" isprimarykey="true"/>
