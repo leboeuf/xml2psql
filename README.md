@@ -41,3 +41,5 @@ To quickly spin up a PostgreSQL instance, run the following command:
 `docker run --name postgres -e POSTGRES_PASSWORD=test -p 5432:5432 -d postgres`
 
 This will be reachable from the host with this connection string: `Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=test`
+
+If using UUID columns, run this before running xml2psql: `docker exec -it <container-id> psql -U postgres -d postgres -c 'CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";'`
