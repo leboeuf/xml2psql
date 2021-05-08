@@ -88,7 +88,7 @@ namespace xml2psql
 
                 if (column.DataType.ToLowerInvariant() == "uuid")
                 {
-                    sb.Append(" DEFAULT uuid_generate_v1mc()");
+                    sb.Append(" DEFAULT uuid_generate_v4()");
                 }
             }
 
