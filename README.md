@@ -4,9 +4,9 @@ This utility takes an XML file as input and executes psql commands to create the
 
 ## Usage
 
-Usage: `xml2psql ./path-to-xml-file`
+Usage: `xml2psql ./path-to-schema-xml-file [./path-to-seed-sql-file]`
 
-The XML file must have a structure similar to the following:
+The optional seed file is an SQL file that will be executed as-is after the schema has been created. The XML file must have a structure similar to the following:
 
 ```
 <xml2psql>

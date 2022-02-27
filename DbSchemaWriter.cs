@@ -1,12 +1,9 @@
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.XPath;
-using Npgsql;
 using xml2psql.Model;
 
 namespace xml2psql
@@ -15,48 +12,65 @@ namespace xml2psql
     {
         public static async Task Write(string connectionString, IEnumerable<Table> tables)
         {
-            using (var connection = new NpgsqlConnection(connectionString))
+            using var connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+            using var transaction = connection.BeginTransaction();
+            using var command = connection.CreateCommand();
+
+            // Check whether we need to enable uuid support
+            var hasUuidPrimaryKey = tables.Any(t => t.Columns.Any(c => c.DataType.ToLowerInvariant() == "uuid" && c.IsPrimaryKey));
+            if (hasUuidPrimaryKey)
             {
-                connection.Open();
-                using (var transaction = connection.BeginTransaction())
-                using (var command = connection.CreateCommand())
+                Console.WriteLine("Warning: Found PK columns with UUID data type, please remember to run 'CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";' on your database (this script won't run it because the user needs SUPERADMIN privileges).");
+            }
+
+            // Create tables
+            foreach (var table in tables)
+            {
+                command.CommandText = $"CREATE TABLE {table.Name} ({Environment.NewLine}{GetColumnDefinitions(table.Columns)})";
+                await command.ExecuteNonQueryAsync();
+
+                var columnsWithIndexes = table.Columns.Where(c => c.HasIndex).ToArray();
+                if (columnsWithIndexes.Count() == 0)
                 {
-                    // Check whether we need to enable uuid support
-                    var hasUuidPrimaryKey = tables.Any(t => t.Columns.Any(c => c.DataType.ToLowerInvariant() == "uuid" && c.IsPrimaryKey));
-                    if (hasUuidPrimaryKey)
-                    {
-                        Console.WriteLine("Warning: Found PK columns with UUID data type, please remember to run 'CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";' on your database (this script won't run it because the user needs SUPERADMIN privileges).");
-                    }
-
-                    // Create tables
-                    foreach (var table in tables)
-                    {
-                        command.CommandText = $"CREATE TABLE {table.Name} ({Environment.NewLine}{GetColumnDefinitions(table.Columns)})";
-                        await command.ExecuteNonQueryAsync();
-
-                        var columnsWithIndexes = table.Columns.Where(c => c.HasIndex).ToArray();
-                        if (columnsWithIndexes.Count() == 0)
-                        {
-                            continue;
-                        }
-
-                        foreach (var column in columnsWithIndexes)
-                        {
-                            command.CommandText = $"CREATE INDEX on {table.Name} ({column.Name})";
-                            await command.ExecuteNonQueryAsync();
-                        }
-                    }
-
-                    try
-                    {
-                        await transaction.CommitAsync();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"Error while committing database transaction: {e.Message}");
-                        await transaction.RollbackAsync();
-                    }
+                    continue;
                 }
+
+                foreach (var column in columnsWithIndexes)
+                {
+                    command.CommandText = $"CREATE INDEX on {table.Name} ({column.Name})";
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+
+            try
+            {
+                await transaction.CommitAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error while committing database transaction: {e.Message}");
+                await transaction.RollbackAsync();
+            }
+        }
+
+        public static async Task ExecuteSql(string connectionString, string sql)
+        {
+            using var connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+            using var transaction = connection.BeginTransaction();
+            using var command = connection.CreateCommand();
+
+            try
+            {
+                command.CommandText = sql;
+                await command.ExecuteNonQueryAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error while committing database transaction: {e.Message}");
+                await transaction.RollbackAsync();
             }
         }
 

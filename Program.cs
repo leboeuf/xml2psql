@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
@@ -13,7 +12,7 @@ namespace xml2psql
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("Usage: xml2psql ./path-to-xml-file");
+                Console.WriteLine("Usage: xml2psql ./path-to-schema-xml-file ./path-to-seed-sql-file");
                 return;
             }
 
@@ -25,6 +24,7 @@ namespace xml2psql
             }
 
             // Load XML file
+            Console.Write("Processing file " + args[0]);
             var xml = TryLoadXml(args[0]);
             if (xml == null)
             {
@@ -52,6 +52,22 @@ namespace xml2psql
             // Write to database
             var connectionString = xml.XPathSelectElement("/xml2psql/ConnectionString[1]").Value;
             await DbSchemaWriter.Write(connectionString, tables);
+
+            // Load seed files
+            for (int i = 1; i < args.Length; i++)
+            {
+                if (!File.Exists(args[i]))
+                {
+                    Console.WriteLine($"Error: skipping argument {i}, seed file doesn't exist.");
+                    continue;
+                }
+
+                Console.Write("Processing file " + args[i]);
+                var seedSql = File.ReadAllText(args[i]);
+                await DbSchemaWriter.ExecuteSql(connectionString, seedSql);
+            }
+
+            Console.WriteLing("\nDone\n");
         }
 
         static XDocument TryLoadXml(string path)
