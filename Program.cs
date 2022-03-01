@@ -67,7 +67,7 @@ namespace xml2psql
                 await DbSchemaWriter.ExecuteSql(connectionString, seedSql);
             }
 
-            Console.WriteLing("\nDone\n");
+            Console.WriteLine("\nDone\n");
         }
 
         static XDocument TryLoadXml(string path)
