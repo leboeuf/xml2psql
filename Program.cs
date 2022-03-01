@@ -62,7 +62,7 @@ namespace xml2psql
                     continue;
                 }
 
-                Console.Write("Processing file " + args[i]);
+                Console.WriteLine("Processing file " + args[i]);
                 var seedSql = File.ReadAllText(args[i]);
                 await DbSchemaWriter.ExecuteSql(connectionString, seedSql);
             }
