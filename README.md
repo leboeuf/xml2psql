@@ -8,6 +8,9 @@ Usage: `xml2psql ./path-to-schema-xml-file [./path-to-seed-sql-file]`
 
 The optional seed file is an SQL file that will be executed as-is after the schema has been created. The XML file must have a structure similar to the following:
 
+Write CREATE script to file: `xml2psql ./path-to-schema-xml-file -o ./path-to-output-sql-file`
+
+
 ```
 <xml2psql>
     <ConnectionString>Host=localhost;Port=5432;Database=xmltest;Username=xmltest_user;Password=test</ConnectionString>

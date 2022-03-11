@@ -49,6 +49,18 @@ namespace xml2psql
             // Parse XML file
             var tables = XmlParser.ParseXml(xml);
 
+            // Write to file?
+            if (args.Length == 3 && args[1] == "-o")
+            {
+                var outputFilePath = args[2];
+
+                var sql = DbSchemaWriter.GetSqlSchema(tables);
+                await File.WriteAllTextAsync(outputFilePath, sql);
+
+                Console.WriteLine($"\nDone writing to file: {outputFilePath}\n");
+                return;
+            }
+
             // Write to database
             var connectionString = xml.XPathSelectElement("/xml2psql/ConnectionString[1]").Value;
             await DbSchemaWriter.Write(connectionString, tables);
