@@ -12,13 +12,6 @@ namespace xml2psql
     {
         public static async Task Write(string connectionString, IEnumerable<Table> tables)
         {
-            // Check whether we need to enable uuid support
-            var hasUuidPrimaryKey = tables.Any(t => t.Columns.Any(c => c.DataType.ToLowerInvariant() == "uuid" && c.IsPrimaryKey));
-            if (hasUuidPrimaryKey)
-            {
-                Console.WriteLine("Warning: Found PK columns with UUID data type, please remember to run 'CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";' on your database (this script won't run it because the user needs SUPERADMIN privileges).");
-            }
-
             var sql = GetSqlSchema(tables);
 
             using var connection = new NpgsqlConnection(connectionString);
@@ -105,7 +98,7 @@ namespace xml2psql
 
                 if (column.DataType.ToLowerInvariant() == "uuid")
                 {
-                    sb.Append(" DEFAULT uuid_generate_v4()");
+                    sb.Append(" DEFAULT gen_random_uuid()");
                 }
             }
 
