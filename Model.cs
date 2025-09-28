@@ -1,16 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.XPath;
-using Npgsql;
 
 namespace xml2psql.Model
 {
     public class Table
     {
         public string Name { get; set; }
+        public string UniqueIndex { get; set; }
         public IEnumerable<Column> Columns { get; set; }
     }
 

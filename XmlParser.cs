@@ -41,12 +41,14 @@ namespace xml2psql
         private static Table GetTable(XElement xml)
         {
             var name = xml.Attribute("name")?.Value;
+            var uniqueIndex = xml.Attribute("uniqueindex")?.Value;
             var columnNodes = xml.XPathSelectElements("Column");
 
             return new Table
             {
                 Name = name,
-                Columns = columnNodes.Select(GetColumn)
+                Columns = columnNodes.Select(GetColumn),
+                UniqueIndex = uniqueIndex,
             };
         }
     }

@@ -65,6 +65,11 @@ namespace xml2psql
                 {
                     sb.Append($"CREATE INDEX on {table.Name} ({column.Name});\n\n");
                 }
+
+                if (!string.IsNullOrWhiteSpace(table.UniqueIndex))
+                {
+                    sb.Append($"CREATE UNIQUE INDEX on {table.Name}{table.UniqueIndex};\n\n");
+                }
             }
 
             return sb.ToString();
